@@ -1,6 +1,7 @@
 require 'json'
 require 'sinatra/base'
 require 'google/cloud/translate'
+require './rules'
 
 class App < Sinatra::Base
   FINGLISH_MAPPING = {
@@ -36,7 +37,7 @@ class App < Sinatra::Base
     'ن' => 'n',
     'و' => 'v',
     'ه' => 'h',
-    'ی' => 'i',
+    'ی' => 'y',
     '؟' => '?'
   }
 
@@ -49,6 +50,7 @@ class App < Sinatra::Base
   end
 
   def convert_to_finglish(text)
+    text = apply_rules(text)
     text.split('').map { |c| FINGLISH_MAPPING[c] || c }.join('')
   end
 
@@ -61,9 +63,7 @@ class App < Sinatra::Base
   end
 
   get '/translate' do
-    puts 'here'
     farsi = translate_to_farsi(params['text'])
-    puts 'here2'
     finglish = convert_to_finglish(farsi)
     {
       translation: {
